@@ -1,18 +1,16 @@
 <template>
   <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
+    <ThePawnVue />
+    <TheKingVue />
+    <TheKnightVue />
+    <TheRookVue />
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
-import HelloWorld from '@/components/HelloWorld.vue'; // @ is an alias to /src
+<script lang="ts" setup>
+import ThePawnVue from '@/components/ChessIcons/ThePawn.vue';
+import TheKingVue from '@/components/ChessIcons/TheKing.vue';
+import TheKnightVue from '@/components/ChessIcons/TheKnight.vue';
+import TheRookVue from '@/components/ChessIcons/TheRook.vue';
 
-export default defineComponent({
-  name: 'HomeView',
-  components: {
-    HelloWorld,
-  },
-});
 </script>
