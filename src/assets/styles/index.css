@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+    .chess__item {
+        width: 3rem;
+        height: 3rem;
+    }
+    .chess__image {
+        max-width: 100%;
+        max-height: 100%;
+        color: inherit;
+        fill: currentColor;
+    }
+}
+@layer base {
+    html {
+        font-size: 62.5%;
+    }
+}
+
+.root,
+#root,
+#docs-root {
+  --primary-color: #fff;
+  --secondary-color: #000;
+}

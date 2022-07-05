@@ -10,7 +10,7 @@
         >
             <g
                 transform="translate(0.000000,1280.000000) scale(0.100000,-0.100000)"
-                fill="#000000"
+                fill="currentColor"
                 stroke="none"
             >
                 <path d="M4500 12794 c-357 -33 -696 -154 -995 -352 -384 -256 -595 -558 -686
