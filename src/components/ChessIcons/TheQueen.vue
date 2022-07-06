@@ -10,7 +10,7 @@
     >
       <g
         transform="translate(0.000000,1203.000000) scale(0.100000,-0.100000)"
-        fill="#000000"
+        fill="currentColor"
         stroke="none"
       >
         <path d="M6268 12020 c-248 -45 -488 -209 -616 -421 -163 -269 -164 -617 -2

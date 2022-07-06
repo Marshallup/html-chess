@@ -15,14 +15,13 @@
     }
 }
 @layer base {
+    :root {
+        --even-color: #a0522d;
+        --odd-color: #f5deb3;
+        --cell-size: 8rem;
+    }
+
     html {
         font-size: 62.5%;
     }
-}
-
-.root,
-#root,
-#docs-root {
-  --primary-color: #fff;
-  --secondary-color: #000;
 }

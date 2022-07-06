@@ -1,44 +1,41 @@
 <template>
   <div
     :class="cellTypeClass"
-    class="cell"
+    class="cell w-cell-size h-cell-size flex justify-center items-center"
+    @click="onClickFigure"
+    @keydown="onClickFigure"
   >
     <slot />
   </div>
 </template>
 
 <script setup lang="ts">
-import { defineProps, computed } from 'vue';
+import { defineProps, defineEmits, computed } from 'vue';
 
 interface TheCellProps {
   isEven?: boolean,
 }
 
+interface ChessItemWrapEmits {
+  (event: 'clickChess'): void,
+}
+
+const emits = defineEmits<ChessItemWrapEmits>();
 const props = defineProps<TheCellProps>();
 const cellTypeClass = computed(() => {
-  let className = 'cell--';
-
   if (props.isEven) {
-    className += 'even';
-  } else {
-    className += 'odd';
+    return 'bg-event-color';
   }
 
-  return className;
+  return 'bg-odd-color';
 });
+
+function onClickFigure() {
+  emits('clickChess');
+}
 
 </script>
 
 <style lang="scss" scoped>
-@import '@/assets/styles/vars.scss';
-.cell {
-  width: $cellSize;
-  height: $cellSize;
-  &--even {
-    background-color: $evenCellColor;
-  }
-  &--odd {
-    background-color: $oddCellColor;
-  }
-}
+
 </style>
