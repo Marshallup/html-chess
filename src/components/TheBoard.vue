@@ -4,7 +4,9 @@
             v-for="(cell, cellID, cellIdx) in boardData"
             :key="cellID"
             :is-even="isFillCell(cellIdx)"
+            :is-can-move="getIsAvailableCell(availableMoveCells, cellID as string)"
             class="relative"
+            :class="getCursorPointerCell(cell.figure, cellID as string)"
             @click-chess="handleCellClick(cellID as string)"
         >
             <div
@@ -36,7 +38,14 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, unref } from 'vue';
+import {
+  reactive,
+  ref,
+  computed,
+  unref,
+  defineProps,
+  defineEmits,
+} from 'vue';
 import TheKnightVue from '@/components/ChessIcons/TheKnight.vue';
 import TheRookVue from '@/components/ChessIcons/TheRook.vue';
 import TheBishopVue from '@/components/ChessIcons/TheBishop.vue';
@@ -51,31 +60,71 @@ import {
   getWordCell,
   isNumberCell,
   getNumberCell,
+  getAvaiableCells,
+  getIsAvailableCell,
 } from '@/services/board/board.service';
+import { BoardCell, Player } from '@/services/board/types';
 
+interface TheBoardProps {
+  currentPlayer: Player,
+}
+interface TheBoardEmits {
+  (event: 'changePlayer', val: Player): void,
+}
+
+const props = defineProps<TheBoardProps>();
+const emits = defineEmits<TheBoardEmits>();
 const boardData = reactive(createBoardData());
-// const isCanMoveFigure = ref(true);
-const isWhitePlayer = ref(true);
+const isFirstPlayer = computed({
+  get: () => props.currentPlayer === 'player1',
+  set: (val) => emits('changePlayer', val ? 'player1' : 'player2'),
+});
 const activeCellID = ref<null | string>(null);
+const availableMoveCells = ref<string[]>([]);
 
+function clearAvaiableMoveCell() {
+  availableMoveCells.value = [];
+}
 function changeCurrentUser() {
-  isWhitePlayer.value = !unref(isWhitePlayer);
+  isFirstPlayer.value = !unref(isFirstPlayer);
 }
 function isCurrentUser(isWhite: boolean) {
-  if (isWhite && unref(isWhitePlayer)) {
+  if (isWhite && unref(isFirstPlayer)) {
     return true;
   }
-  if (!isWhite && !unref(isWhitePlayer)) {
+  if (!isWhite && !unref(isFirstPlayer)) {
     return true;
   }
 
   return false;
 }
 function moveFigure(fromCellKey: string, toCellKey: string) {
-  boardData[toCellKey].figure = boardData[fromCellKey].figure;
-  boardData[fromCellKey].figure = false;
-  activeCellID.value = null;
-  changeCurrentUser();
+  const figureData = boardData[fromCellKey].figure;
+
+  if (figureData) {
+    figureData.isFirstMove = false;
+    boardData[toCellKey].figure = figureData;
+    boardData[fromCellKey].figure = false;
+    activeCellID.value = null;
+    changeCurrentUser();
+    clearAvaiableMoveCell();
+  }
+}
+function getCursorPointerCell(figure: BoardCell['figure'], cellID: string): 'cursor-pointer' | '' {
+  if (figure) {
+    if (!unref(activeCellID) && figure.isWhite === unref(isFirstPlayer)) {
+      return 'cursor-pointer';
+    }
+    if (unref(activeCellID) === cellID) {
+      return 'cursor-pointer';
+    }
+  }
+
+  if (getIsAvailableCell(unref(availableMoveCells), cellID)) {
+    return 'cursor-pointer';
+  }
+
+  return '';
 }
 function handleCellClick(key: string) {
   const cell = boardData[key];
@@ -92,18 +141,21 @@ function handleCellClick(key: string) {
     if (!activeCell) {
       activeCellID.value = key;
       figure.isActive = true;
+      availableMoveCells.value = getAvaiableCells(
+        figure.type,
+        figure.isFirstMove,
+        key,
+        unref(isFirstPlayer),
+      );
     } else if (activeCell === key) {
       activeCellID.value = null;
       figure.isActive = false;
+      availableMoveCells.value = [];
     }
-  } else if (activeCell) {
+  } else if (activeCell && getIsAvailableCell(unref(availableMoveCells), key)) {
     moveFigure(activeCell, key);
   }
-
-  console.log('move handle');
 }
-
-console.log(boardData, 'board');
 
 </script>
 

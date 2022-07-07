@@ -5,6 +5,12 @@
     @click="onClickFigure"
     @keydown="onClickFigure"
   >
+    <div
+      v-if="props.isCanMove"
+      :class="`cell-available-move
+      absolute left-1/2 top-1/2 rounded-full bg-red-500 w-5 h-5 transform-cpu
+      -translate-x-1/2 -translate-y-1/2`"
+    />
     <slot />
   </div>
 </template>
@@ -14,6 +20,7 @@ import { defineProps, defineEmits, computed } from 'vue';
 
 interface TheCellProps {
   isEven?: boolean,
+  isCanMove?: boolean,
 }
 
 interface ChessItemWrapEmits {
@@ -37,5 +44,9 @@ function onClickFigure() {
 </script>
 
 <style lang="scss" scoped>
-
+/* .cell {
+  &-available {
+    &-move {}
+  }
+} */
 </style>
