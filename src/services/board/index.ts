@@ -1,7 +1,8 @@
-import { getFigureAfterInit } from '../figure/figure.service';
-import { FigureType } from '../figure/types';
+import { getFigureAfterInit, FigureType } from '../figure';
+import { availCellsForPawn, cutDownCellsForPawn } from '../pawn';
 import { Board, BoardCell } from './types';
 
+export * from './types';
 export const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 const countCells = 8;
 
@@ -110,38 +111,61 @@ export function getIsAvailableCell(availableCells: string[], cellID: string) {
   return availableCells.indexOf(cellID) > -1;
 }
 
+export function parseCellID(cellID: string): [number, string] {
+  const arr = cellID.split('');
+
+  return [+arr[0], arr[1]];
+}
+
+export function getCutDownFigures(
+  boardData: Board['cells'],
+  figureType: FigureType,
+  cellID: string,
+  isFirstPlayer: boolean,
+) {
+  const cutDownCells: string[] = [];
+  const currentCell = boardData[cellID];
+  const [numberCell, letterCell] = parseCellID(cellID);
+  const idxLetter = letters.indexOf(letterCell);
+
+  if (numberCell < 8 && currentCell) {
+    switch (figureType) {
+      case 'pawn':
+        return cutDownCellsForPawn(
+          boardData,
+          isFirstPlayer,
+          idxLetter,
+          numberCell,
+          currentCell,
+          letters,
+        );
+      default:
+        return [];
+    }
+  }
+
+  return cutDownCells;
+}
+
 export function getAvaiableCells(
+  boardData: Board['cells'],
   figureType: FigureType,
   isFirstZood: boolean,
   cellID: string,
   isFirstPlayer: boolean,
 ): string[] {
-  const cellIDArr = cellID.split('');
-  const numberCell = +cellIDArr[0];
-  const letterCell = cellIDArr[1];
-  // const indexLetter = letters.indexOf(letterCell);
-  const avaiableCells: string[] = [];
+  const [numberCell, letterCell] = parseCellID(cellID);
 
   switch (figureType) {
     case 'pawn':
-      if (isFirstPlayer) {
-        avaiableCells.push(`${numberCell + 1}${letterCell}`);
-
-        if (isFirstZood) {
-          avaiableCells.push(`${numberCell + 2}${letterCell}`);
-        }
-      } else {
-        avaiableCells.push(`${numberCell - 1}${letterCell}`);
-
-        if (isFirstZood) {
-          avaiableCells.push(`${numberCell - 2}${letterCell}`);
-        }
-      }
-
-      break;
+      return availCellsForPawn(
+        boardData,
+        isFirstPlayer,
+        isFirstZood,
+        numberCell,
+        letterCell,
+      );
     default:
       return [];
   }
-
-  return avaiableCells;
 }

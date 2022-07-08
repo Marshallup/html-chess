@@ -1,6 +1,10 @@
 import { FigureType } from './types';
 import { BoardCell } from '../board/types';
 
+export * from './types';
+
+// export const enum figureTypes =
+
 export function getIsWhiteFigure(idx: number): boolean {
   if (idx >= 48) {
     return true;
@@ -68,5 +72,13 @@ export function getFigureAfterInit(idx: number): BoardCell['figure'] {
       isActive: false,
     };
   }
+  return false;
+}
+
+export function checkIsOtherPlayerFigure(figure1: BoardCell['figure'], figure2: BoardCell['figure']) {
+  if (figure1 && figure2) {
+    return figure1.isWhite !== figure2.isWhite;
+  }
+
   return false;
 }

@@ -5,6 +5,8 @@
             :key="cellID"
             :is-even="isFillCell(cellIdx)"
             :is-can-move="getIsAvailableCell(availableMoveCells, cellID as string)"
+            :is-cut-cell="getIsAvailableCell(cutDownFigures, cellID as string)"
+            :is-active="activeCellID === cellID"
             class="relative"
             :class="getCursorPointerCell(cell.figure, cellID as string)"
             @click-chess="handleCellClick(cellID as string)"
@@ -39,12 +41,12 @@
 
 <script setup lang="ts">
 import {
-  reactive,
   ref,
   computed,
   unref,
   defineProps,
   defineEmits,
+  defineExpose,
 } from 'vue';
 import TheKnightVue from '@/components/ChessIcons/TheKnight.vue';
 import TheRookVue from '@/components/ChessIcons/TheRook.vue';
@@ -62,28 +64,39 @@ import {
   getNumberCell,
   getAvaiableCells,
   getIsAvailableCell,
-} from '@/services/board/board.service';
+  getCutDownFigures,
+} from '@/services/board';
 import { BoardCell, Player } from '@/services/board/types';
+import { FigureType } from '@/services/figure/types';
 
 interface TheBoardProps {
   currentPlayer: Player,
 }
+interface CutFigureEmitVal {
+  isFirstPlayer: boolean,
+  typeFigure: FigureType,
+}
 interface TheBoardEmits {
   (event: 'changePlayer', val: Player): void,
+  (event: 'cutFigure', val: CutFigureEmitVal): void,
 }
 
 const props = defineProps<TheBoardProps>();
 const emits = defineEmits<TheBoardEmits>();
-const boardData = reactive(createBoardData());
+const boardData = ref(createBoardData());
 const isFirstPlayer = computed({
   get: () => props.currentPlayer === 'player1',
   set: (val) => emits('changePlayer', val ? 'player1' : 'player2'),
 });
 const activeCellID = ref<null | string>(null);
 const availableMoveCells = ref<string[]>([]);
+const cutDownFigures = ref<string[]>([]);
 
 function clearAvaiableMoveCell() {
   availableMoveCells.value = [];
+}
+function clearCutDownFigures() {
+  cutDownFigures.value = [];
 }
 function changeCurrentUser() {
   isFirstPlayer.value = !unref(isFirstPlayer);
@@ -98,40 +111,59 @@ function isCurrentUser(isWhite: boolean) {
 
   return false;
 }
+function emitCutFigure(typeFigure: FigureType) {
+  emits('cutFigure', {
+    isFirstPlayer: unref(isFirstPlayer),
+    typeFigure,
+  });
+}
 function moveFigure(fromCellKey: string, toCellKey: string) {
-  const figureData = boardData[fromCellKey].figure;
+  const figureData = unref(boardData)[fromCellKey].figure;
+  const toFigureData = unref(boardData)[toCellKey].figure;
 
   if (figureData) {
+    if (toFigureData) {
+      emitCutFigure(toFigureData.type);
+    }
+
     figureData.isFirstMove = false;
-    boardData[toCellKey].figure = figureData;
-    boardData[fromCellKey].figure = false;
+    unref(boardData)[toCellKey].figure = figureData;
+    unref(boardData)[fromCellKey].figure = false;
     activeCellID.value = null;
     changeCurrentUser();
     clearAvaiableMoveCell();
+    clearCutDownFigures();
   }
 }
 function getCursorPointerCell(figure: BoardCell['figure'], cellID: string): 'cursor-pointer' | '' {
+  const pointerClass = 'cursor-pointer';
+
   if (figure) {
     if (!unref(activeCellID) && figure.isWhite === unref(isFirstPlayer)) {
-      return 'cursor-pointer';
+      return pointerClass;
     }
     if (unref(activeCellID) === cellID) {
-      return 'cursor-pointer';
+      return pointerClass;
     }
   }
 
   if (getIsAvailableCell(unref(availableMoveCells), cellID)) {
-    return 'cursor-pointer';
+    return pointerClass;
+  }
+
+  if (getIsAvailableCell(unref(cutDownFigures), cellID)) {
+    return pointerClass;
   }
 
   return '';
 }
 function handleCellClick(key: string) {
-  const cell = boardData[key];
+  const cell = unref(boardData)[key];
   const activeCell = unref(activeCellID);
   const { figure } = cell;
+  const isCutCell = getIsAvailableCell(unref(cutDownFigures), key);
 
-  if (figure) {
+  if (!isCutCell && figure) {
     const isPlayerCanMoveFigure = isCurrentUser(figure.isWhite);
 
     if (!isPlayerCanMoveFigure) {
@@ -142,20 +174,45 @@ function handleCellClick(key: string) {
       activeCellID.value = key;
       figure.isActive = true;
       availableMoveCells.value = getAvaiableCells(
+        unref(boardData),
         figure.type,
         figure.isFirstMove,
+        key,
+        unref(isFirstPlayer),
+      );
+      cutDownFigures.value = getCutDownFigures(
+        unref(boardData),
+        figure.type,
         key,
         unref(isFirstPlayer),
       );
     } else if (activeCell === key) {
       activeCellID.value = null;
       figure.isActive = false;
-      availableMoveCells.value = [];
+      clearAvaiableMoveCell();
+      clearCutDownFigures();
     }
-  } else if (activeCell && getIsAvailableCell(unref(availableMoveCells), key)) {
+  } else if (
+    activeCell
+    && (
+      getIsAvailableCell(unref(availableMoveCells), key)
+      || isCutCell
+    )
+  ) {
     moveFigure(activeCell, key);
   }
 }
+
+function resetBoard() {
+  boardData.value = createBoardData();
+  activeCellID.value = null;
+  availableMoveCells.value = [];
+  cutDownFigures.value = [];
+}
+
+defineExpose({
+  resetBoard,
+});
 
 </script>
 
