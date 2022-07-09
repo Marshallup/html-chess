@@ -1,42 +1,42 @@
 <template>
-    <div class="w-board-size flex items-center flex-wrap">
-        <TheCellVue
-            v-for="(cell, cellID, cellIdx) in boardData"
-            :key="cellID"
-            :is-even="isFillCell(cellIdx)"
-            :is-can-move="getIsAvailableCell(availableMoveCells, cellID as string)"
-            :is-cut-cell="getIsAvailableCell(cutDownFigures, cellID as string)"
-            :is-active="activeCellID === cellID"
-            class="relative"
-            :class="getCursorPointerCell(cell.figure, cellID as string)"
-            @click-chess="handleCellClick(cellID as string)"
-        >
-            <div
-              v-if="isWordCell(cellIdx)"
-              class="bottom-0 right-0 p-2 text-3xl font-bold absolute"
-            >
-              {{ getWordCell(cellIdx) }}
-            </div>
-            <div
-              v-if="isNumberCell(cellIdx)"
-              class="absolute font-bold text-3xl p-2 left-0 top-0"
-            >
-              {{ getNumberCell(cellIdx) }}
-            </div>
-            <div
-              v-if="cell.figure"
-              class="w-full flex items-center justify-center h-full"
-              :class="cell.figure.isWhite ? 'text-white' : ''"
-            >
-              <TheRookVue v-if="cell.figure.type === 'rook'" />
-              <TheQueenVue v-if="cell.figure.type === 'queen'" />
-              <TheBishopVue v-if="cell.figure.type === 'bishop'" />
-              <TheKnightVue v-if="cell.figure.type === 'knight'" />
-              <TheKingVue v-if="cell.figure.type === 'king'" />
-              <ThePawnVue v-if="cell.figure.type === 'pawn'" />
-            </div>
-        </TheCellVue>
-    </div>
+  <div class="w-board-size flex items-center flex-wrap">
+    <TheCellVue
+      v-for="(cell, cellID, cellIdx) in boardData"
+      :key="cellID"
+      :is-even="isFillCell(cellIdx)"
+      :is-can-move="getIsAvailableCell(availableMoveCells, cellID as string)"
+      :is-cut-cell="getIsAvailableCell(cutDownFigures, cellID as string)"
+      :is-active="activeCellID === cellID"
+      class="relative"
+      :class="getCursorPointerCell(cell.figure, cellID as string)"
+      @click-chess="handleCellClick(cellID as string)"
+    >
+      <div
+        v-if="isWordCell(cellIdx)"
+        class="bottom-0 right-0 p-2 text-3xl font-bold absolute"
+      >
+        {{ getWordCell(cellIdx) }}
+      </div>
+      <div
+        v-if="isNumberCell(cellIdx)"
+        class="absolute font-bold text-3xl p-2 left-0 top-0"
+      >
+        {{ getNumberCell(cellIdx) }}
+      </div>
+      <div
+        v-if="cell.figure"
+        class="w-full flex items-center justify-center h-full"
+        :class="cell.figure.isWhite ? 'text-white' : ''"
+      >
+        <TheRookVue v-if="cell.figure.type === 'rook'" />
+        <TheQueenVue v-if="cell.figure.type === 'queen'" />
+        <TheBishopVue v-if="cell.figure.type === 'bishop'" />
+        <TheKnightVue v-if="cell.figure.type === 'knight'" />
+        <TheKingVue v-if="cell.figure.type === 'king'" />
+        <ThePawnVue v-if="cell.figure.type === 'pawn'" />
+      </div>
+    </TheCellVue>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -64,7 +64,6 @@ import {
   getNumberCell,
   getAvaiableCells,
   getIsAvailableCell,
-  getCutDownFigures,
 } from '@/services/board';
 import { BoardCell, Player } from '@/services/board/types';
 import { FigureType } from '@/services/figure/types';
@@ -173,19 +172,17 @@ function handleCellClick(key: string) {
     if (!activeCell) {
       activeCellID.value = key;
       figure.isActive = true;
-      availableMoveCells.value = getAvaiableCells(
+
+      const cellsData = getAvaiableCells(
         unref(boardData),
         figure.type,
         figure.isFirstMove,
         key,
         unref(isFirstPlayer),
       );
-      cutDownFigures.value = getCutDownFigures(
-        unref(boardData),
-        figure.type,
-        key,
-        unref(isFirstPlayer),
-      );
+
+      availableMoveCells.value = cellsData.moveCellsID;
+      cutDownFigures.value = cellsData.cutCellsID;
     } else if (activeCell === key) {
       activeCellID.value = null;
       figure.isActive = false;

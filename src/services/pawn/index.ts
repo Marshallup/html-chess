@@ -1,14 +1,30 @@
-import { checkIsOtherPlayerFigure } from '../figure';
+import { checkIsOtherPlayerFigure, getCellsAction, CellsAction } from '../figure';
+import { LETTERS } from '../board/consts';
 import { Board, BoardCell } from '../board/types';
 
-export function canMoveCells(boardData: Board['cells'], avaiableCells: string[]): string[] {
-  const idxCellWithFigure = avaiableCells.findIndex((cellID) => boardData[cellID]?.figure);
+export function cutDownCellsForPawn(
+  boardData: Board['cells'],
+  isFirstPlayer: boolean,
+  idxLetter: number,
+  numberCell: number,
+  currentCell: BoardCell,
+): string[] {
+  const cutDownCells = [];
+  const numberMoveCell = isFirstPlayer ? numberCell + 1 : numberCell - 1;
+  const leftLetter = `${numberMoveCell}${LETTERS[idxLetter - 1]}`;
+  const rightLetter = `${numberMoveCell}${LETTERS[idxLetter + 1]}`;
+  const leftCell = boardData[leftLetter];
+  const rightCell = boardData[rightLetter];
 
-  if (idxCellWithFigure > -1) {
-    return avaiableCells.filter((_, cellIdx) => cellIdx > idxCellWithFigure);
+  if (checkIsOtherPlayerFigure(leftCell?.figure, currentCell?.figure)) {
+    cutDownCells.push(leftLetter);
   }
 
-  return avaiableCells;
+  if (checkIsOtherPlayerFigure(rightCell?.figure, currentCell?.figure)) {
+    cutDownCells.push(rightLetter);
+  }
+
+  return cutDownCells;
 }
 
 export function availCellsForPawn(
@@ -17,7 +33,9 @@ export function availCellsForPawn(
   isFirstZood: boolean,
   numberCell: number,
   letterCell: string,
-) {
+  idxLetter: number,
+  currentCell: BoardCell,
+): CellsAction {
   const avaiableCells = [];
 
   if (isFirstPlayer) {
@@ -34,35 +52,15 @@ export function availCellsForPawn(
     }
   }
 
-  if (avaiableCells.length) {
-    return canMoveCells(boardData, avaiableCells);
-  }
+  const cellsAction = getCellsAction(boardData, avaiableCells, isFirstPlayer);
 
-  return avaiableCells;
-}
+  cellsAction.cutCellsID = cutDownCellsForPawn(
+    boardData,
+    isFirstPlayer,
+    idxLetter,
+    numberCell,
+    currentCell,
+  );
 
-export function cutDownCellsForPawn(
-  boardData: Board['cells'],
-  isFirstPlayer: boolean,
-  idxLetter: number,
-  numberCell: number,
-  currentCell: BoardCell,
-  letters: string[],
-): string[] {
-  const cutDownCells = [];
-  const numberMoveCell = isFirstPlayer ? numberCell + 1 : numberCell - 1;
-  const leftLetter = `${numberMoveCell}${letters[idxLetter - 1]}`;
-  const rightLetter = `${numberMoveCell}${letters[idxLetter + 1]}`;
-  const leftCell = boardData[leftLetter];
-  const rightCell = boardData[rightLetter];
-
-  if (checkIsOtherPlayerFigure(leftCell.figure, currentCell.figure)) {
-    cutDownCells.push(leftLetter);
-  }
-
-  if (checkIsOtherPlayerFigure(rightCell.figure, currentCell.figure)) {
-    cutDownCells.push(rightLetter);
-  }
-
-  return cutDownCells;
+  return cellsAction;
 }

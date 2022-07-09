@@ -1,20 +1,25 @@
-import { getFigureAfterInit, FigureType } from '../figure';
-import { availCellsForPawn, cutDownCellsForPawn } from '../pawn';
+import {
+  getFigureAfterInit,
+  FigureType,
+  CellsAction,
+  createCellActionData,
+} from '../figure';
+import { LETTERS, COUNT_CELLS } from './consts';
+import { availCellsForPawn } from '../pawn';
+import { avaiableCellsForRook } from '../rook';
 import { Board, BoardCell } from './types';
 
 export * from './types';
-export const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-const countCells = 8;
 
 export function isNumberCell(idx: number) {
-  if (idx % countCells === 0) {
+  if (idx % COUNT_CELLS === 0) {
     return true;
   }
 
   return false;
 }
 export function getNumberCell(idx: number) {
-  return countCells - idx / countCells;
+  return COUNT_CELLS - idx / COUNT_CELLS;
 }
 export function isWordCell(idx: number): boolean {
   if (idx > 55) {
@@ -24,20 +29,20 @@ export function isWordCell(idx: number): boolean {
   return false;
 }
 export function getWordCell(idx: number): string {
-  return letters[idx - 56];
+  return LETTERS[idx - 56];
 }
 export function getLetterBoard(
   cellIdx: number,
   cellNumber: number,
   idxMinus: number,
 ) {
-  return `${countCells - cellNumber}${letters[countCells - (idxMinus - cellIdx)]}`;
+  return `${COUNT_CELLS - cellNumber}${LETTERS[COUNT_CELLS - (idxMinus - cellIdx)]}`;
 }
 export function getCellIdFromIdx(idx: number) {
   const cellNumber = idx + 1;
 
   if (cellNumber < 9) {
-    return `${countCells}${letters[idx]}`;
+    return `${COUNT_CELLS}${LETTERS[idx]}`;
   }
 
   if (cellNumber < 17) {
@@ -68,7 +73,7 @@ export function getCellIdFromIdx(idx: number) {
 }
 
 export function isFillCell(idx: number) {
-  if ((idx / countCells) % 2 < 1) {
+  if ((idx / COUNT_CELLS) % 2 < 1) {
     if (idx % 2 === 0) {
       return false;
     }
@@ -117,44 +122,16 @@ export function parseCellID(cellID: string): [number, string] {
   return [+arr[0], arr[1]];
 }
 
-export function getCutDownFigures(
-  boardData: Board['cells'],
-  figureType: FigureType,
-  cellID: string,
-  isFirstPlayer: boolean,
-) {
-  const cutDownCells: string[] = [];
-  const currentCell = boardData[cellID];
-  const [numberCell, letterCell] = parseCellID(cellID);
-  const idxLetter = letters.indexOf(letterCell);
-
-  if (numberCell < 8 && currentCell) {
-    switch (figureType) {
-      case 'pawn':
-        return cutDownCellsForPawn(
-          boardData,
-          isFirstPlayer,
-          idxLetter,
-          numberCell,
-          currentCell,
-          letters,
-        );
-      default:
-        return [];
-    }
-  }
-
-  return cutDownCells;
-}
-
 export function getAvaiableCells(
   boardData: Board['cells'],
   figureType: FigureType,
   isFirstZood: boolean,
   cellID: string,
   isFirstPlayer: boolean,
-): string[] {
+): CellsAction {
   const [numberCell, letterCell] = parseCellID(cellID);
+  const idxLetter = LETTERS.indexOf(letterCell);
+  const currentCell = boardData[cellID];
 
   switch (figureType) {
     case 'pawn':
@@ -164,8 +141,18 @@ export function getAvaiableCells(
         isFirstZood,
         numberCell,
         letterCell,
+        idxLetter,
+        currentCell,
+      );
+    case 'rook':
+      return avaiableCellsForRook(
+        boardData,
+        numberCell,
+        letterCell,
+        idxLetter,
+        isFirstPlayer,
       );
     default:
-      return [];
+      return createCellActionData();
   }
 }

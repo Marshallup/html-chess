@@ -1,9 +1,43 @@
-import { FigureType } from './types';
-import { BoardCell } from '../board/types';
+import { FigureType, CellsAction } from './types';
+import { BoardCell, Board } from '../board/types';
 
 export * from './types';
 
-// export const enum figureTypes =
+export function createCellActionData(): CellsAction {
+  return {
+    moveCellsID: [],
+    cutCellsID: [],
+  };
+}
+
+export function getCellsAction(
+  boardData: Board['cells'],
+  availableCells: string[],
+  isFirstPlayer: boolean,
+  cbStraightEnemyFigure?: (
+    cells: CellsAction,
+    findIdxFigure: number
+  ) => void,
+): CellsAction {
+  const cells: CellsAction = {
+    moveCellsID: availableCells,
+    cutCellsID: [],
+  };
+  const idxCellFigure = availableCells.findIndex((cellID) => boardData[cellID]?.figure);
+  const figure = boardData[availableCells[idxCellFigure]]?.figure;
+
+  if (figure) {
+    const isFriendFigure = figure.isWhite === isFirstPlayer;
+
+    cells.moveCellsID = availableCells.filter((_, cellIdx) => cellIdx < idxCellFigure);
+
+    if (!isFriendFigure) {
+      cbStraightEnemyFigure?.(cells, idxCellFigure);
+    }
+  }
+
+  return cells;
+}
 
 export function getIsWhiteFigure(idx: number): boolean {
   if (idx >= 48) {

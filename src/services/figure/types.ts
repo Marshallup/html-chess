@@ -6,3 +6,8 @@ export interface Figure {
     isFirstMove: boolean,
     isActive: boolean,
 }
+
+export interface CellsAction {
+    moveCellsID: string[],
+    cutCellsID: string[],
+}
