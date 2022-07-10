@@ -1,7 +1,7 @@
 <template>
   <div class="w-board-size flex items-center flex-wrap">
     <TheCellVue
-      v-for="(cell, cellID, cellIdx) in boardData"
+      v-for="(cell, cellID, cellIdx) in boardData?.data"
       :key="cellID"
       :is-even="isFillCell(cellIdx)"
       :is-can-move="getIsAvailableCell(availableMoveCells, cellID as string)"
@@ -56,7 +56,6 @@ import TheKingVue from '@/components/ChessIcons/TheKing.vue';
 import TheCellVue from '@/components/TheCell.vue';
 import ThePawnVue from '@/components/ChessIcons/ThePawn.vue';
 import {
-  createBoardData,
   isFillCell,
   isWordCell,
   getWordCell,
@@ -67,6 +66,7 @@ import {
 } from '@/services/board';
 import { BoardCell, Player } from '@/services/board/types';
 import { FigureType } from '@/services/figure/types';
+import Board from '@/models/Board';
 
 interface TheBoardProps {
   currentPlayer: Player,
@@ -82,7 +82,7 @@ interface TheBoardEmits {
 
 const props = defineProps<TheBoardProps>();
 const emits = defineEmits<TheBoardEmits>();
-const boardData = ref(createBoardData());
+const boardData = ref(new Board());
 const isFirstPlayer = computed({
   get: () => props.currentPlayer === 'player1',
   set: (val) => emits('changePlayer', val ? 'player1' : 'player2'),
@@ -117,8 +117,8 @@ function emitCutFigure(typeFigure: FigureType) {
   });
 }
 function moveFigure(fromCellKey: string, toCellKey: string) {
-  const figureData = unref(boardData)[fromCellKey].figure;
-  const toFigureData = unref(boardData)[toCellKey].figure;
+  const figureData = unref(boardData).data[fromCellKey].figure;
+  const toFigureData = unref(boardData).data[toCellKey].figure;
 
   if (figureData) {
     if (toFigureData) {
@@ -126,8 +126,8 @@ function moveFigure(fromCellKey: string, toCellKey: string) {
     }
 
     figureData.isFirstMove = false;
-    unref(boardData)[toCellKey].figure = figureData;
-    unref(boardData)[fromCellKey].figure = false;
+    unref(boardData).data[toCellKey].figure = figureData;
+    unref(boardData).data[fromCellKey].figure = false;
     activeCellID.value = null;
     changeCurrentUser();
     clearAvaiableMoveCell();
@@ -157,7 +157,7 @@ function getCursorPointerCell(figure: BoardCell['figure'], cellID: string): 'cur
   return '';
 }
 function handleCellClick(key: string) {
-  const cell = unref(boardData)[key];
+  const cell = unref(boardData).data[key];
   const activeCell = unref(activeCellID);
   const { figure } = cell;
   const isCutCell = getIsAvailableCell(unref(cutDownFigures), key);
@@ -174,7 +174,7 @@ function handleCellClick(key: string) {
       figure.isActive = true;
 
       const cellsData = getAvaiableCells(
-        unref(boardData),
+        unref(boardData).data,
         figure.type,
         figure.isFirstMove,
         key,
@@ -199,9 +199,8 @@ function handleCellClick(key: string) {
     moveFigure(activeCell, key);
   }
 }
-
 function resetBoard() {
-  boardData.value = createBoardData();
+  boardData.value = new Board();
   activeCellID.value = null;
   availableMoveCells.value = [];
   cutDownFigures.value = [];
