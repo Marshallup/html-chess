@@ -1,7 +1,7 @@
 <template>
   <div
     :class="cellTypeClass"
-    class="cell w-cell-size h-cell-size flex justify-center items-center"
+    class="cell w-cell-size h-cell-size flex justify-center items-center select-none"
     @click="onClickFigure"
     @keydown="onClickFigure"
   >

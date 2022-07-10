@@ -1,7 +1,7 @@
 import { Board } from '../board/types';
 import { LETTERS, COUNT_CELLS } from '../board/consts';
 import { getCellsAction, CellsAction } from '../figure';
-import { CellsIDSides } from './types';
+import { CellsIDSides } from '../figure/types';
 
 export function getCellsIDFromRook(
   numberCell: number,

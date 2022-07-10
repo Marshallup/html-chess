@@ -7,6 +7,7 @@ import {
 import { LETTERS, COUNT_CELLS } from './consts';
 import { availCellsForPawn } from '../pawn';
 import { avaiableCellsForRook } from '../rook';
+import { avaiableCellsForKnight } from '../knight';
 import { Board, BoardCell } from './types';
 
 export * from './types';
@@ -146,6 +147,14 @@ export function getAvaiableCells(
       );
     case 'rook':
       return avaiableCellsForRook(
+        boardData,
+        numberCell,
+        letterCell,
+        idxLetter,
+        isFirstPlayer,
+      );
+    case 'knight':
+      return avaiableCellsForKnight(
         boardData,
         numberCell,
         letterCell,

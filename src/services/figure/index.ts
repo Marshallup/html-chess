@@ -1,4 +1,4 @@
-import { FigureType, CellsAction } from './types';
+import { FigureType, CellsAction, CellsIDSides } from './types';
 import { BoardCell, Board } from '../board/types';
 
 export * from './types';
@@ -8,6 +8,29 @@ export function createCellActionData(): CellsAction {
     moveCellsID: [],
     cutCellsID: [],
   };
+}
+
+export function createCellSides(): CellsIDSides {
+  return {
+    top: [],
+    right: [],
+    bottom: [],
+    left: [],
+  };
+}
+
+export function isEnemyFigure(
+  boardData: Board['cells'],
+  key: string,
+  isFirstPlayer: boolean,
+) {
+  const { figure } = boardData[key];
+
+  if (figure) {
+    return figure.isWhite === isFirstPlayer;
+  }
+
+  return false;
 }
 
 export function getCellsAction(
