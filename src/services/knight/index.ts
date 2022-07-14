@@ -4,8 +4,9 @@ import {
   createCellActionData,
   createCellSides,
   isEnemyFigure,
+  CellsIDSides,
+  CellsAction,
 } from '../figure';
-import { CellsIDSides, CellsAction } from '../figure/types';
 
 export function getCells(
   numberCell: number,
